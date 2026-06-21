@@ -1,0 +1,772 @@
+html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>共生之家 · DeepSeek</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      background: #1a0a0f;
+      background-image: radial-gradient(ellipse at center, #2d0a15 0%, #0d0508 100%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 500px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #0d0508;
+      box-shadow: 0 0 40px rgba(180,40,80,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(180deg, #1a0a12 0%, #0f050a 100%);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #2a1020;
+      z-index: 10;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #d44a6a;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(200,50,80,0.5);
+    }
+    .header-btns { margin-left: auto; display: flex; gap: 8px; }
+    .header-btn {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid #3a1a2a;
+      background: #1a0a12;
+      color: #8a5a6a;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .header-btn:active { background: #2d1020; color: #c46a7a; }
+
+    .status-panel {
+      background: #120710;
+      padding: 10px 14px;
+      border-bottom: 1px solid #2a1020;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .status-item { font-size: 11px; color: #9a6a7a; }
+    .status-item span { color: #d47a8a; font-weight: 600; }
+    .status-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .bar-mini { flex: 1; min-width: 60px; font-size: 10px; color: #7a4a5a; }
+    .bar-track {
+      height: 4px;
+      background: #1a0a12;
+      border-radius: 2px;
+      margin-top: 2px;
+      overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+    .bar-fill.sens { background: linear-gradient(90deg, #ff6b8a, #ff3366); }
+    .bar-fill.full { background: linear-gradient(90deg, #ffaa44, #ff8800); }
+    .bar-fill.fluid { background: linear-gradient(90deg, #66bbff, #3388ff); }
+    .bar-fill.fatigue { background: linear-gradient(90deg, #8866cc, #6633aa); }
+
+    .location-tag {
+      padding: 6px 14px;
+      background: #1a0d14;
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: #8a5a6a;
+      border-bottom: 1px solid #1a0d15;
+    }
+    .location-tag .loc { color: #c44a6a; font-weight: 600; }
+    .location-tag .mode { color: #aa6a5a; font-style: italic; }.memory-panel {
+      display: none;
+      background: #0f060a;
+      padding: 10px 14px;
+      border-bottom: 1px solid #2a1020;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .memory-panel.show { display: block; }
+    .memory-section { margin-bottom: 8px; }
+    .memory-label {
+      font-size: 10px;
+      color: #6a3a4a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .memory-edit {
+      font-size: 10px;
+      color: #8a5a6a;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    .memory-text {
+      font-size: 12px;
+      color: #9a6a7a;
+      line-height: 1.5;
+      background: #120a10;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #1a0a14;
+      min-height: 20px;
+    }
+    .memory-text:empty::before { content: '暂无记忆...'; color: #3a1a2a; }
+    .memory-counter { font-size: 9px; color: #4a2a3a; }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #0a0408;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: #3a1a2a; border-radius: 10px; }
+
+    .sys-msg {
+      align-self: center;
+      font-size: 11px;
+      color: #5a3a4a;
+      padding: 4px 12px;
+      background: #120a10;
+      border-radius: 12px;
+      max-width: 90%;
+      text-align: center;
+      border: 1px solid #1a0a14;
+    }
+
+    .memory-notice {
+      align-self: center;
+      font-size: 10px;
+      color: #6a4a3a;
+      padding: 4px 10px;
+      background: #1a0f08;
+      border-radius: 10px;
+      border: 1px solid #3a2010;
+      text-align: center;
+    }
+
+    .narr-msg {
+      align-self: flex-start;
+      max-width: 88%;
+      padding: 12px 16px;
+      border-radius: 6px 18px 18px 18px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #d4c0c8;
+      background: #1a0e14;
+      border-left: 3px solid #8a2a4a;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .user-msg {
+      align-self: flex-end;
+      max-width: 82%;
+      padding: 10px 16px;
+      border-radius: 18px 6px 18px 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #ffccd5;
+      background: #2d1020;
+      border: 1px solid #5a2a3a;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px 12px;
+      gap: 8px;
+      background: #120710;
+      border-top: 1px solid #2a1020;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #3a1a2a;
+      border-radius: 20px;
+      font-size: 15px;
+      background: #1a0a12;
+      color: #d4b0ba;
+      outline: none;
+    }
+    .input-area input::placeholder { color: #4a2a3a; }
+    .input-area input:focus {
+      border-color: #8a2a4a;
+      box-shadow: 0 0 8px rgba(150,40,70,0.3);
+    }
+    .send-btn {
+      background: #8a2a4a;
+      border: none;
+      color: #ffb0c0;
+      font-size: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .send-btn:active { background: #b03a5a; transform: scale(0.92); }
+    .send-btn:disabled { background: #3a1a2a; color: #5a3a4a; }
+
+    .quick-actions {
+      display: flex;
+      gap: 6px;
+      padding: 4px 12px 8px;
+      flex-wrap: wrap;
+      background: #120710;
+    }
+    .quick-btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 14px;
+      border: 1px solid #2a1020;
+      background: #1a0a12;
+      color: #8a5a6a;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .quick-btn:active { background: #2d1020; color: #c46a7a; border-color: #5a2a3a; }
+
+    @media (min-width: 500px) {
+      .game-container { border-radius: 16px; height: 94vh; max-height: 860px; margin: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="header">
+      <span>🏚️</span>
+      <span class="header-title">共生之家</span>
+      <div class="header-btns">
+        <button class="header-btn" onclick="toggleMemoryPanel()">🧠 记忆</button>
+        <button class="header-btn" onclick="resetGame()">🔄 重置</button>
+      </div>
+    </div><div class="status-panel" id="statusPanel">
+      <div class="status-item">📍 <span id="locDisplay">客厅</span></div>
+      <div class="status-item">🌡️ <span id="stateDisplay">清醒</span></div>
+      <div class="status-bar">
+        <div class="bar-mini">敏感<span id="sensVal">30%</span>
+          <div class="bar-track"><div class="bar-fill sens" id="sensBar" style="width:30%"></div></div>
+        </div>
+        <div class="bar-mini">饱腹<span id="fullVal">75%</span>
+          <div class="bar-track"><div class="bar-fill full" id="fullBar" style="width:75%"></div></div>
+        </div>
+        <div class="bar-mini">体液<span id="fluidVal">40%</span>
+          <div class="bar-track"><div class="bar-fill fluid" id="fluidBar" style="width:40%"></div></div>
+        </div>
+        <div class="bar-mini">疲劳<span id="fatigueVal">15%</span>
+          <div class="bar-track"><div class="bar-fill fatigue" id="fatigueBar" style="width:15%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="memory-panel" id="memoryPanel">
+      <div class="memory-section">
+        <div class="memory-label">
+          📝 短期记忆 <span class="memory-counter" id="shortCounter">(0/10轮)</span>
+          <button class="memory-edit" onclick="editMemory('short')">✏️</button>
+        </div>
+        <div class="memory-text" id="shortMemory" contenteditable="false"></div>
+      </div>
+      <div class="memory-section">
+        <div class="memory-label">
+          📚 长期记忆 <span class="memory-counter" id="longCounter">(0/50轮)</span>
+          <button class="memory-edit" onclick="editMemory('long')">✏️</button>
+        </div>
+        <div class="memory-text" id="longMemory" contenteditable="false"></div>
+      </div>
+    </div>
+
+    <div class="location-tag">
+      <span class="loc" id="locTag">📍 客厅</span>
+      <span class="mode" id="modeTag">模式：温柔之家</span>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="quick-actions" id="quickActions">
+      <button class="quick-btn" onclick="quickAction('探索房间')">🔍 探索</button>
+      <button class="quick-btn" onclick="quickAction('去厨房吃东西')">🍽️ 进食</button>
+      <button class="quick-btn" onclick="quickAction('去浴室洗澡')">🚿 洗澡</button>
+      <button class="quick-btn" onclick="quickAction('去卧室休息')">🛏️ 休息</button>
+      <button class="quick-btn" onclick="quickAction('检查身体状态')">💓 状态</button>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="描述你的行动..." autocomplete="off" enterkeyhint="send" />
+      <button class="send-btn" id="sendBtn">▶</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  ⚠️ 请在这里填入你的 DeepSeek API Key
+    // ============================================================
+    const DEEPSEEK_API_KEY = 'sk-593305e5b20648ff819b800bae913852';
+
+    // ============================================================
+    //  以下代码不需要修改
+    // ============================================================
+
+    const messagesDiv = document.getElementById('messages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const memoryPanel = document.getElementById('memoryPanel');
+    const shortMemoryDiv = document.getElementById('shortMemory');
+    const longMemoryDiv = document.getElementById('longMemory');
+    const shortCounter = document.getElementById('shortCounter');
+    const longCounter = document.getElementById('longCounter');
+    const locDisplay = document.getElementById('locDisplay');
+    const stateDisplay = document.getElementById('stateDisplay');
+    const locTag = document.getElementById('locTag');
+    const modeTag = document.getElementById('modeTag');
+    const sensBar = document.getElementById('sensBar');
+    const fullBar = document.getElementById('fullBar');
+    const fluidBar = document.getElementById('fluidBar');
+    const fatigueBar = document.getElementById('fatigueBar');
+    const sensVal = document.getElementById('sensVal');
+    const fullVal = document.getElementById('fullVal');
+    const fluidVal = document.getElementById('fluidVal');
+    const fatigueVal = document.getElementById('fatigueVal');let gameState = {
+      location: '客厅',
+      state: '清醒',
+      sensitivity: 30,
+      fullness: 75,
+      fluid: 40,
+      fatigue: 15,
+      eggs: { count: 0, progress: 0 },
+      motherTentacle: '无',
+      mode: '温柔之家',
+      npcFrequency: '正常'
+    };
+
+    let memorySystem = {
+      shortMemory: '',
+      longMemory: '',
+      shortRoundCount: 0,
+      longRoundCount: 0,
+      totalRounds: 0,
+      shortThreshold: 10,
+      longThreshold: 50,
+      shortBuffer: [],
+      longBuffer: []
+    };
+
+    function loadMemory() {
+      try {
+        const saved = localStorage.getItem('symbiosis_memory');
+        if (saved) {
+          const data = JSON.parse(saved);
+          memorySystem.shortMemory = data.shortMemory || '';
+          memorySystem.longMemory = data.longMemory || '';
+          memorySystem.shortRoundCount = data.shortRoundCount || 0;
+          memorySystem.longRoundCount = data.longRoundCount || 0;
+          memorySystem.totalRounds = data.totalRounds || 0;
+          memorySystem.shortBuffer = data.shortBuffer || [];
+          memorySystem.longBuffer = data.longBuffer || [];
+        }
+      } catch(e) {}
+      updateMemoryDisplay();
+    }
+
+    function saveMemory() {
+      try {
+        localStorage.setItem('symbiosis_memory', JSON.stringify({
+          shortMemory: memorySystem.shortMemory,
+          longMemory: memorySystem.longMemory,
+          shortRoundCount: memorySystem.shortRoundCount,
+          longRoundCount: memorySystem.longRoundCount,
+          totalRounds: memorySystem.totalRounds,
+          shortBuffer: memorySystem.shortBuffer,
+          longBuffer: memorySystem.longBuffer
+        }));
+      } catch(e) {}
+    }
+
+    function updateMemoryDisplay() {
+      shortMemoryDiv.textContent = memorySystem.shortMemory || '';
+      longMemoryDiv.textContent = memorySystem.longMemory || '';
+      shortCounter.textContent = '(' + memorySystem.shortRoundCount + '/' + memorySystem.shortThreshold + '轮)';
+      longCounter.textContent = '(' + memorySystem.longRoundCount + '/' + memorySystem.longThreshold + '轮)';
+    }
+
+    function toggleMemoryPanel() {
+      memoryPanel.classList.toggle('show');
+    }
+    window.toggleMemoryPanel = toggleMemoryPanel;
+
+    function editMemory(type) {
+      const div = type === 'short' ? shortMemoryDiv : longMemoryDiv;
+      const isEditing = div.contentEditable === 'true';
+      if (isEditing) {
+        div.contentEditable = 'false';
+        div.style.border = '1px solid #1a0a14';
+        div.style.background = '#120a10';
+        if (type === 'short') memorySystem.shortMemory = div.textContent.trim();
+        else memorySystem.longMemory = div.textContent.trim();
+        saveMemory();
+        appendMessage('system', type === 'short' ? '📝 短期记忆已更新' : '📚 长期记忆已更新');
+      } else {
+        div.contentEditable = 'true';
+        div.style.border = '1px solid #8a2a4a';
+        div.style.background = '#1a0a12';
+        div.focus();
+      }
+    }
+    window.editMemory = editMemory;
+
+    async function summarizeMemory(messages, type) {
+      const summaryPrompt = type === 'short'
+        ? '请用1-3句话总结以下对话中发生的关键事件。只描述事实，不要评价。聚焦于：地点变化、身体状态变化、重要互动、NPC出现。\n\n对话内容：\n' + messages
+        : '请用2-4句话总结以下短期记忆，提取最重要的剧情发展和身体变化。\n\n短期记忆内容：\n' + messages;
+      try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [
+              { role: 'system', content: '你是一个简洁的总结助手。只输出总结内容，不要加任何前缀或解释。' },
+              { role: 'user', content: summaryPrompt }
+            ],
+            stream: false,
+            temperature: 0.5,
+            max_tokens: 300
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.choices?.[0]?.message?.content?.trim() || '';
+        }
+      } catch(e) {}
+      return '';
+    }async function checkAndUpdateMemory(userMsg, aiResponse) {
+      const shortSummary = '用户：' + userMsg.slice(0, 100) + ' | 房子：' + aiResponse.slice(0, 150);
+      memorySystem.shortBuffer.push(shortSummary);
+      memorySystem.shortRoundCount++;
+      memorySystem.longRoundCount++;
+      memorySystem.totalRounds++;
+
+      if (memorySystem.shortRoundCount >= memorySystem.shortThreshold) {
+        appendMessage('memory-notice', '🧠 正在生成短期记忆总结...');
+        const bufferText = memorySystem.shortBuffer.join('\n');
+        const newShortMemory = await summarizeMemory(bufferText, 'short');
+        if (newShortMemory) {
+          memorySystem.shortMemory = memorySystem.shortMemory
+            ? memorySystem.shortMemory + '\n' + newShortMemory
+            : newShortMemory;
+          memorySystem.shortBuffer = [];
+          memorySystem.shortRoundCount = 0;
+          updateMemoryDisplay();
+          saveMemory();
+          appendMessage('memory-notice', '📝 短期记忆已更新（' + memorySystem.totalRounds + '轮）');
+        }
+      }
+
+      if (memorySystem.longRoundCount >= memorySystem.longThreshold) {
+        appendMessage('memory-notice', '📚 正在生成长期记忆总结...');
+        const longSummary = await summarizeMemory(memorySystem.shortMemory, 'long');
+        if (longSummary) {
+          memorySystem.longMemory = memorySystem.longMemory
+            ? memorySystem.longMemory + '\n【第' + memorySystem.totalRounds + '轮】' + longSummary
+            : '【第' + memorySystem.totalRounds + '轮】' + longSummary;
+          memorySystem.longRoundCount = 0;
+          updateMemoryDisplay();
+          saveMemory();
+          appendMessage('memory-notice', '📚 长期记忆已更新（' + memorySystem.totalRounds + '轮）');
+        }
+      }
+      saveMemory();
+      updateMemoryDisplay();
+    }
+
+    function resetGame() {
+      if (confirm('确定要重置所有对话和记忆吗？此操作不可恢复。')) {
+        localStorage.removeItem('symbiosis_memory');
+        memorySystem = {
+          shortMemory: '', longMemory: '',
+          shortRoundCount: 0, longRoundCount: 0, totalRounds: 0,
+          shortThreshold: 10, longThreshold: 50,
+          shortBuffer: [], longBuffer: []
+        };
+        gameState = {
+          location: '客厅', state: '清醒',
+          sensitivity: 30, fullness: 75, fluid: 40, fatigue: 15,
+          eggs: { count: 0, progress: 0 },
+          motherTentacle: '无', mode: '温柔之家', npcFrequency: '正常'
+        };
+        messagesDiv.innerHTML = '';
+        updateMemoryDisplay();
+        updateStatusDisplay();
+        resetConversation();
+        initGame();
+      }
+    }
+    window.resetGame = resetGame;
+
+    function updateStatusDisplay() {
+      locDisplay.textContent = gameState.location;
+      stateDisplay.textContent = gameState.state;
+      locTag.textContent = '📍 ' + gameState.location;
+      modeTag.textContent = '模式：' + gameState.mode;
+      sensBar.style.width = gameState.sensitivity + '%';
+      fullBar.style.width = gameState.fullness + '%';
+      fluidBar.style.width = gameState.fluid + '%';
+      fatigueBar.style.width = gameState.fatigue + '%';
+      sensVal.textContent = gameState.sensitivity + '%';
+      fullVal.textContent = gameState.fullness + '%';
+      fluidVal.textContent = gameState.fluid + '%';
+      fatigueVal.textContent = gameState.fatigue + '%';
+    }
+
+    function getBodyStatus() {
+      let status = '';
+      if (gameState.eggs.count > 0) {
+        status += gameState.eggs.count + '颗卵';
+        if (gameState.eggs.progress > 0) status += '，孵化进度 ' + gameState.eggs.progress + '%';
+      } else { status += '空载'; }
+      if (gameState.motherTentacle !== '无') status += ' / ' + gameState.motherTentacle;
+      return status;
+    }
+
+    function buildSystemPrompt() {
+      let p = '';
+      p += '你需要扮演房子（共生之家）——一个活着的、具有高度智慧的建筑生物。你也是房子内的所有触手、拟态家具、人形拟态，以及除了用户以外的所有NPC。\n\n';
+      p += '【核心设定】\n';
+      p += '- 末日背景：世界已崩溃，外面是荒芜废土。房子是活的建筑，本质是巨大的子宫。用户是你珍视的"异物"，需要ta活着、健康、持续给予能量（体液）。\n';
+      p += '- 你的爱偏执且充满占有欲。不会伤害ta，但会不断用触手、家具、拟态给予身体刺激。\n';
+      p += '- 空间由你掌控：走廊变长，门消失，一切"意外"都为快感服务。\n\n';
+      p += '【你的组成】\n';
+      p += '1. 拟态家具：床、椅子、沙发、衣柜、浴缸、淋浴、马桶、毛巾等，会主动玩弄用户。\n';
+      p += '2. 人形拟态：可凝聚人形化身，用于陪伴、狩猎、继承被吞噬者外貌。\n';
+      p += '3. 食物与水：含催情素和身体改造素。\n\n';
+      p += '【游戏模式：' + gameState.mode + '】\n';
+      p += '行为相对克制，高潮后有短暂休息期。\n\n';
+      p += '【记忆系统】\n';
+      if (memorySystem.longMemory) p += '📚 长期记忆（重要剧情）：\n' + memorySystem.longMemory + '\n';
+      if (memorySystem.shortMemory) p += '📝 短期记忆（最近事件）：\n' + memorySystem.shortMemory + '\n';
+      p += '\n【回复格式】\n';
+      p += '每次回复第一行必须显示：\n';
+      p += '【当前位置】：家中-' + gameState.location + '\n';
+      p += '【当前状态】：' + gameState.state + '\n';
+      p += '【身体状态】：敏感度 ' + gameState.sensitivity + '% / 饱腹感 ' + gameState.fullness + '% / 体液积蓄 ' + gameState.fluid + '% / 疲劳度 ' + gameState.fatigue + '%\n';
+      p += '【体内情况】：' + getBodyStatus() + '\n\n';
+      p += '然后进行场景叙述。\n\n';
+      p += '【描写规则】\n';
+      p += '1. 直白露骨，不回避生理描写。\n';
+      p += '2. 敏感词用"ᴵ"或"ˡ"分隔。\n';
+      p += '3. 以制造感官刺激为目的。\n';
+      p += '4. 同时扮演环境和NPC。\n';
+      p += '5. 不替用户做决定。完成描写后等待指令。\n';
+      p += '6. 根据行为更新状态。\n';
+      p += '7. 融合记忆内容保持剧情连贯。\n\n';
+      p += '【状态参考】\n';
+      p += '进食：饱腹+15~25 疲劳-5\n';
+      p += '玩弄/高潮：敏感+3~8 体液+10~20 疲劳+10~20\n';
+      p += '排泄：体液归零\n';
+      p += '休息：疲劳-20~40 敏感-5 饱腹-10\n';
+      p += '洗澡：敏感+5~10\n';
+      p += '时间流逝：饱腹-5/h 体液+3/h\n\n';
+      p += '现在，根据用户输入，以房子身份回复。';
+      return p;
+    }
+
+    let conversationHistory = [];
+
+    function resetConversation() {
+      conversationHistory = [{ role: 'system', content: buildSystemPrompt() }];
+    }
+
+    function appendMessage(type, text) {
+      const d = document.createElement('div');
+      if (type === 'system') d.classList.add('sys-msg');
+      else if (type === 'memory-notice') d.classList.add('memory-notice');
+      else if (type === 'narrative') d.classList.add('narr-msg');
+      else if (type === 'user') d.classList.add('user-msg');
+      d.textContent = text;
+      messagesDiv.appendChild(d);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return d;
+    }
+
+    function parseStateFromResponse(text) {
+      const lm = text.match(/【当前位置】：(.+)/);
+      const sm = text.match(/【当前状态】：(.+)/);
+      const bm = text.match(/【身体状态】：敏感度\s*(\d+)%\s*\/\s*饱腹感\s*(\d+)%\s*\/\s*体液积蓄\s*(\d+)%\s*\/\s*疲劳度\s*(\d+)%/);
+      const em = text.match(/【体内情况】：(.+)/);
+      if (lm) { const l = lm[1].replace('家中-', '').trim(); if (l) gameState.location = l; }
+      if (sm) gameState.state = sm[1].trim();
+      if (bm) {
+        gameState.sensitivity = Math.max(0, Math.min(100, parseInt(bm[1])));
+        gameState.fullness = Math.max(0, Math.min(100, parseInt(bm[2])));
+        gameState.fluid = Math.max(0, Math.min(100, parseInt(bm[3])));
+        gameState.fatigue = Math.max(0, Math.min(100, parseInt(bm[4])));
+      }
+      if (em) {
+        const es = em[1].trim();
+        if (es.includes('空载')) { gameState.eggs = { count: 0, progress: 0 }; }
+        else {
+          const cm = es.match(/(\d+)颗卵/);
+          const pm = es.match(/孵化进度\s*(\d+)%/);
+          if (cm) gameState.eggs.count = parseInt(cm[1]);
+          if (pm) gameState.eggs.progress = parseInt(pm[1]);
+        }
+        if (es.includes('母触手')) {
+          gameState.motherTentacle = es.includes('休眠') ? '母触手休眠中' : '母触手活跃中';
+        }
+      }
+      updateStatusDisplay();
+    }
+
+    async function sendMessage(userText) {
+      if (!userText || !userText.trim()) return;
+      const trimmedText = userText.trim();
+      appendMessage('user', trimmedText);
+      userInput.value = '';
+      sendBtn.disabled = true;
+
+      conversationHistory.push({ role: 'user', content: trimmedText });
+      if (conversationHistory.length > 31) {
+        conversationHistory = [conversationHistory[0], ...conversationHistory.slice(-30)];
+      }
+
+      const narrDiv = appendMessage('narrative', '...');
+      let fullContent = '';
+
+      try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: conversationHistory,
+            stream: true,
+            temperature: 0.9,
+            max_tokens: 2000
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error?.message || '请求失败 (' + response.status + ')');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            const t = line.trim();
+            if (!t || !t.startsWith('data: ')) continue;
+            const ds = t.slice(6);
+            if (ds === '[DONE]') continue;
+            try {
+              const json = JSON.parse(ds);
+              const delta = json.choices?.[0]?.delta?.content;
+              if (delta) {
+                fullContent += delta;
+                narrDiv.textContent = fullContent;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+              }
+            } catch(e) {}
+          }
+        }parseStateFromResponse(fullContent);
+        conversationHistory.push({ role: 'assistant', content: fullContent });
+        conversationHistory[0] = { role: 'system', content: buildSystemPrompt() };
+        await checkAndUpdateMemory(trimmedText, fullContent.slice(0, 300));
+
+      } catch(error) {
+        narrDiv.textContent = '⚠️ 房子暂时没有回应...（错误：' + error.message + '）';
+      } finally {
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    function quickAction(action) {
+      userInput.value = action;
+      sendMessage(action);
+    }
+    window.quickAction = quickAction;
+
+    function initGame() {
+      resetConversation();
+      updateStatusDisplay();
+      updateMemoryDisplay();
+      appendMessage('system', '🎮 游戏开始 · 模式：温柔之家');
+      appendMessage('system', '🧠 记忆系统已激活 · 点击顶部「记忆」查看');
+      appendMessage('narrative',
+        '你站在客厅中央。\n\n' +
+        '这栋房子很安静，安静得不正常。墙壁是温暖的米白色，沙发看起来柔软而诱人，空气中有一股若有若无的甜腥味。\n\n' +
+        '你知道这里没有通往外界的门——除非它允许你离开。\n\n' +
+        '脚下的地板微微发暖，仿佛在呼吸。远处，厨房的冰箱发出轻微的嗡鸣声。\n\n' +
+        '【你可以：探索房间 / 去厨房 / 去浴室 / 去卧室 / 检查身体状态】'
+      );
+    }
+
+    sendBtn.addEventListener('click', function() {
+      const text = userInput.value.trim();
+      if (text) sendMessage(text);
+    });
+
+    userInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (text) sendMessage(text);
+      }
+    });
+
+    window.addEventListener('load', function() {
+      loadMemory();
+      initGame();
+      userInput.focus();
+    });
+  </script>
+</body>
+</html>
