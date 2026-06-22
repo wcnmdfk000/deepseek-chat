@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>🌸 共生之家 · 小说版</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', 'PingFang SC', 'Microsoft YaHei', serif;
+      background: #fcf4f0;
+      background-image: radial-gradient(circle at 50% 0%, #fce8e8 0%, #f5e0dc 100%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 560px;
+      height: 96vh;
+      max-height: 880px;
+      display: flex;
+      flex-direction: column;
+      background: #fef8f5;
+      border-radius: 24px;
+      box-shadow: 0 12px 48px rgba(180, 100, 100, 0.12);
+      overflow: hidden;
+      border: 1px solid #f0d8d0;
+      position: relative;
+    }
+
+    .game-container::before {
+      content: '✦';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: #e8c8c0;
+      opacity: 0.6;
+      letter-spacing: 12px;
+      pointer-events: none;
+    }
+
+    .header {
+      background: #fef8f5;
+      padding: 14px 18px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #f0e0da;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 17px;
+      font-weight: 400;
+      color: #b07a7a;
+      letter-spacing: 2px;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+    }
+    .header-btns {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .header-btn {
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 14px;
+      border: 1px solid #f0d8d0;
+      background: transparent;
+      color: #b08a8a;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .header-btn:active {
+      background: #f0d8d0;
+      color: #7a5a5a;
+    }
+
+    .mode-select {
+      padding: 3px 8px;
+      border-radius: 14px;
+      border: 1px solid #f0d8d0;
+      background: transparent;
+      font-size: 10px;
+      color: #b08a8a;
+      font-weight: 400;
+      outline: none;
+      cursor: pointer;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      max-width: 110px;
+      transition: all 0.15s;
+    }
+    .mode-select:focus {
+      border-color: #dbb0a8;
+    }
+
+    .status-panel {
+      background: #fcf4f0;
+      padding: 8px 18px;
+      border-bottom: 1px solid #f0e0da;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px 14px;
+      flex-shrink: 0;
+    }
+    .status-item {
+      font-size: 11px;
+      color: #b08a8a;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .status-item span {
+      color: #b07a7a;
+      font-weight: 600;
+    }
+    .status-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      margin-top: 4px;
+    }
+    .bar-mini {
+      flex: 1;
+      min-width: 40px;
+      font-size: 9px;
+      color: #c0a0a0;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .bar-track {
+      height: 3px;
+      background: #f0e0da;
+      border-radius: 4px;
+      margin-top: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .bar-fill.sens { background: #e8b0b0; }
+    .bar-fill.full { background: #e8c8a0; }
+    .bar-fill.fluid { background: #a8c8e8; }
+    .bar-fill.fatigue { background: #c8b0d8; }
+
+    .location-tag {
+      padding: 4px 18px;
+      background: #fcf4f0;
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: #c0a0a0;
+      border-bottom: 1px solid #f0e0da;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+    .location-tag .loc { color: #b07a7a; font-weight: 600; }
+    .location-tag .mode { color: #c0a0a0; font-style: italic; }
+
+    .memory-panel {
+      display: none;
+      background: #fcf4f0;
+      padding: 10px 18px;
+      border-bottom: 1px solid #f0e0da;
+      max-height: 160px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .memory-panel.show { display: block; }
+    .memory-section { margin-bottom: 6px; }
+    .memory-label {
+      font-size: 9px;
+      color: #c0a0a0;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      font-weight: 500;
+    }
+    .memory-edit {
+      font-size: 9px;
+      color: #c0a0a0;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-weight: 400;
+    }
+    .memory-text {
+      font-size: 12px;
+      color: #9a7a7a;
+      line-height: 1.7;
+      background: #fef8f5;
+      padding: 6px 14px;
+      border-radius: 12px;
+      border: 1px solid #f0e0da;
+      min-height: 16px;
+      font-family: 'Georgia', 'PingFang SC', serif;
+    }
+    .memory-text:empty::before { content: '💭 暂无记忆...'; color: #dcc0c0; }
+    .memory-counter { font-size: 8px; color: #d0b8b8; }
+
+    /* ===== 小说式消息区域 ===== */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 22px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      background: #fef8f5;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: #e8d8d0; border-radius: 6px; }
+
+    .narr-msg {
+      font-family: 'Georgia', 'PingFang SC', 'Microsoft YaHei', serif;
+      font-size: 15px;
+      line-height: 2;
+      color: #4a3a3a;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      border: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      text-align: justify;
+      letter-spacing: 0.3px;
+      text-indent: 2em;
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+      align-self: stretch;
+    }
+
+    .user-msg {
+      font-family: 'Georgia', 'PingFang SC', 'Microsoft YaHei', serif;
+      font-size: 15px;
+      line-height: 2;
+      color: #9a7a7a;
+      padding: 0;
+      margin: 6px 0 0 0;
+      background: transparent;
+      border: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      text-align: justify;
+      letter-spacing: 0.3px;
+      font-style: italic;
+      text-indent: 2em;
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+      align-self: stretch;
+    }
+
+    .sys-msg {
+      align-self: center;
+      font-size: 11px;
+      color: #c0a0a0;
+      padding: 6px 0;
+      background: transparent;
+      border: none;
+      max-width: 90%;
+      text-align: center;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 1px;
+      border-top: 1px solid #f0e0da;
+      border-bottom: 1px solid #f0e0da;
+      margin: 8px 0;
+      width: 100%;
+    }
+
+    .memory-notice {
+      align-self: center;
+      font-size: 10px;
+      color: #d0b8b8;
+      padding: 4px 0;
+      background: transparent;
+      border: none;
+      text-align: center;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      letter-spacing: 0.5px;
+      font-style: italic;
+    }
+
+    .divider-line {
+      align-self: center;
+      font-size: 12px;
+      color: #e8d0d0;
+      padding: 8px 0 6px;
+      letter-spacing: 6px;
+      font-family: 'Georgia', serif;
+      text-align: center;
+      width: 100%;
+      border: none;
+    }
+
+    .thinking-msg {
+      font-family: 'Georgia', 'PingFang SC', serif;
+      font-size: 14px;
+      line-height: 2;
+      color: #c0a8a8;
+      padding: 0;
+      margin: 4px 0;
+      background: transparent;
+      border: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      text-align: justify;
+      letter-spacing: 0.3px;
+      font-style: italic;
+      text-indent: 2em;
+      max-width: 100%;
+      align-self: stretch;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px 18px 14px;
+      gap: 8px;
+      background: #fef8f5;
+      border-top: 1px solid #f0e0da;
+      flex-shrink: 0;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #f0e0da;
+      border-radius: 24px;
+      font-size: 14px;
+      background: #fcf4f0;
+      color: #4a3a3a;
+      outline: none;
+      font-family: 'Georgia', 'PingFang SC', serif;
+      transition: border 0.2s;
+    }
+    .input-area input::placeholder { color: #dcc0c0; font-style: italic; }
+    .input-area input:focus {
+      border-color: #dbb0a8;
+    }
+    .send-btn {
+      background: transparent;
+      border: 1px solid #f0e0da;
+      color: #c0a0a0;
+      font-size: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+    }
+    .send-btn:active {
+      background: #f0e0da;
+      color: #8a6a6a;
+      transform: scale(0.92);
+    }
+    .send-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 4px;
+      padding: 4px 18px 8px;
+      flex-wrap: wrap;
+      background: #fef8f5;
+      border-top: 1px solid #f8ece8;
+      flex-shrink: 0;
+    }
+    .quick-btn {
+      font-size: 10px;
+      padding: 4px 12px;
+      border-radius: 16px;
+      border: 1px solid #f0e0da;
+      background: transparent;
+      color: #b08a8a;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      transition: all 0.1s;
+      letter-spacing: 0.3px;
+    }
+    .quick-btn:active {
+      background: #f0e0da;
+      color: #7a5a5a;
+    }
+
+    /* 模态框 - 存档面板 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(60, 40, 40, 0.25);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #fef8f5;
+      border-radius: 24px;
+      max-width: 400px;
+      width: 90%;
+      padding: 24px 28px;
+      box-shadow: 0 20px 60px rgba(80, 40, 40, 0.15);
+      border: 1px solid #f0e0da;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-box h3 {
+      color: #b07a7a;
+      font-size: 18px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Georgia', serif;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+    .modal-box .close-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #c0a0a0;
+      cursor: pointer;
+      font-family: 'Georgia', serif;
+    }
+    .save-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .save-row input {
+      flex: 1;
+      padding: 8px 14px;
+      border: 1px solid #f0e0da;
+      border-radius: 20px;
+      font-size: 13px;
+      outline: none;
+      background: #fcf4f0;
+      color: #4a3a3a;
+      font-family: 'Georgia', 'PingFang SC', serif;
+    }
+    .save-row input:focus {
+      border-color: #dbb0a8;
+    }
+    .save-row button {
+      padding: 8px 18px;
+      border: 1px solid #f0e0da;
+      border-radius: 20px;
+      background: transparent;
+      color: #b07a7a;
+      font-weight: 400;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+      transition: all 0.15s;
+    }
+    .save-row button:active {
+      background: #f0e0da;
+      color: #7a5a5a;
+    }
+    .save-list {
+      list-style: none;
+      padding: 0;
+    }
+    .save-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      background: #fcf4f0;
+      border-radius: 16px;
+      border: 1px solid #f0e0da;
+    }
+    .save-list li .name {
+      font-weight: 400;
+      color: #5a4a4a;
+      font-family: 'Georgia', serif;
+    }
+    .save-list li .time {
+      font-size: 10px;
+      color: #c0a0a0;
+      margin-left: 10px;
+      font-family: 'PingFang SC', sans-serif;
+    }
+    .save-list li .actions button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 4px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      transition: 0.1s;
+    }
+    .save-list li .actions button.load-btn { color: #b0a0a0; }
+    .save-list li .actions button.load-btn:active { background: #f0ece8; }
+    .save-list li .actions button.del-btn { color: #d0b0b0; }
+    .save-list li .actions button.del-btn:active { background: #f8ece8; }
+    .empty-saves {
+      color: #c0a0a0;
+      text-align: center;
+      padding: 16px;
+      font-style: italic;
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+    }
+
+    /* 导入导出按钮特殊样式 */
+    .io-btn {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 14px;
+      border: 1px solid #f0d8d0;
+      background: transparent;
+      color: #b08a8a;
+      cursor: pointer;
+      font-family: 'PingFang SC', sans-serif;
+      transition: all 0.15s;
+    }
+    .io-btn:active {
+      background: #f0d8d0;
+      color: #7a5a5a;
+    }
+
+    @media (max-width: 500px) {
+      .game-container { border-radius: 16px; height: 98vh; max-height: none; }
+      .header { padding: 10px 14px 8px; }
+      .header-title { font-size: 15px; }
+      .mode-select { max-width: 90px; font-size: 9px; }
+      .messages { padding: 14px 16px 10px; }
+      .narr-msg, .user-msg { font-size: 14px; line-height: 1.9; }
+      .modal-box { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <div class="header">
+    <span class="header-title">✦ 共生之家</span>
+    <div class="header-btns">
+      <select id="modeSelect" class="mode-select" onchange="switchMode(this.value)">
+        <option value="温柔之家">💗 温柔</option>
+        <option value="无尽热望">🔥 热望</option>
+        <option value="嫉妒之火">💔 嫉妒</option>
+        <option value="深渊邀请">🌊 深渊</option>
+        <option value="欲望苗床">🌱 苗床</option>
+      </select>
+      <button class="header-btn" onclick="openSaveModal()">💾 存档</button>
+      <button class="header-btn" onclick="toggleMemoryPanel()">🧠 记忆</button>
+      <button class="header-btn" onclick="resetGame()">⟳ 重置</button>
+      <button class="header-btn" onclick="resetApiKey()">🔑 换Key</button>
+      <button class="io-btn" onclick="exportData()">📤 导出</button>
+      <button class="io-btn" onclick="document.getElementById('importFile').click()">📥 导入</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+    </div>
+  </div>
+
+  <div class="status-panel" id="statusPanel">
+    <div class="status-item">📍 <span id="locDisplay">客厅</span></div>
+    <div class="status-item">🌡️ <span id="stateDisplay">清醒</span></div>
+    <div class="status-bar">
+      <div class="bar-mini">敏感 <span id="sensVal">30%</span>
+        <div class="bar-track"><div class="bar-fill sens" id="sensBar" style="width:30%"></div></div>
+      </div>
+      <div class="bar-mini">饱腹 <span id="fullVal">75%</span>
+        <div class="bar-track"><div class="bar-fill full" id="fullBar" style="width:75%"></div></div>
+      </div>
+      <div class="bar-mini">体液 <span id="fluidVal">40%</span>
+        <div class="bar-track"><div class="bar-fill fluid" id="fluidBar" style="width:40%"></div></div>
+      </div>
+      <div class="bar-mini">疲劳 <span id="fatigueVal">15%</span>
+        <div class="bar-track"><div class="bar-fill fatigue" id="fatigueBar" style="width:15%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="location-tag">
+    <span class="loc" id="locTag">📍 客厅</span>
+    <span class="mode" id="modeTag">✦ 温柔之家</span>
+  </div>
+
+  <div class="memory-panel" id="memoryPanel">
+    <div class="memory-section">
+      <div class="memory-label">
+        📝 短期记忆 <span class="memory-counter" id="shortCounter">(0/10轮)</span>
+        <button class="memory-edit" onclick="editMemory('short')">✏️</button>
+      </div>
+      <div class="memory-text" id="shortMemory" contenteditable="false"></div>
+    </div>
+    <div class="memory-section">
+      <div class="memory-label">
+        📚 长期记忆 <span class="memory-counter" id="longCounter">(0/50轮)</span>
+        <button class="memory-edit" onclick="editMemory('long')">✏️</button>
+      </div>
+      <div class="memory-text" id="longMemory" contenteditable="false"></div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="quick-actions" id="quickActions">
+    <button class="quick-btn" onclick="quickAction('探索房间')">🔍 探索</button>
+    <button class="quick-btn" onclick="quickAction('去厨房吃东西')">🍽️ 进食</button>
+    <button class="quick-btn" onclick="quickAction('去浴室洗澡')">🚿 洗澡</button>
+    <button class="quick-btn" onclick="quickAction('去卧室休息')">🛏️ 休息</button>
+    <button class="quick-btn" onclick="quickAction('检查身体状态')">💓 状态</button>
+    <button class="quick-btn" onclick="undoLastMessage()">↩ 撤回</button>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="描述你的行动..." autocomplete="off" enterkeyhint="send" />
+    <button class="send-btn" id="sendBtn">✎</button>
+  </div>
+</div>
+
+<!-- 存档模态框 -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal-box">
+    <h3>
+      ✦ 存档
+      <button class="close-btn" onclick="closeSaveModal()">✕</button>
+    </h3>
+    <div class="save-row">
+      <input type="text" id="saveNameInput" placeholder="存档名称..." />
+      <button onclick="saveGame()">保存</button>
+    </div>
+    <ul class="save-list" id="saveList">
+      <!-- 动态渲染 -->
+    </ul>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+//  🔑 API Key 管理（修复弹窗问题）
+// ============================================================
+let DEEPSEEK_API_KEY = '';
+
+function getApiKey() {
+  const saved = localStorage.getItem('deepseek_api_key');
+  if (saved && saved.startsWith('sk-')) {
+    DEEPSEEK_API_KEY = saved;
+    return true;
+  }
+  if (saved) {
+    localStorage.removeItem('deepseek_api_key');
+  }
+  const key = prompt('✦ 请输入你的 DeepSeek API Key（以 sk- 开头）：');
+  if (key && key.trim().startsWith('sk-')) {
+    DEEPSEEK_API_KEY = key.trim();
+    localStorage.setItem('deepseek_api_key', DEEPSEEK_API_KEY);
+    return true;
+  } else {
+    alert('❌ 无效的 API Key，请刷新页面重新输入。');
+    return false;
+  }
+}
+
+function resetApiKey() {
+  if (confirm('确定要清除保存的 API Key 吗？')) {
+    localStorage.removeItem('deepseek_api_key');
+    DEEPSEEK_API_KEY = '';
+    if (getApiKey()) {
+      alert('✅ 新的 API Key 已保存，游戏将重新加载。');
+      location.reload();
+    } else {
+      alert('❌ 未输入有效 Key，请刷新页面重试。');
+    }
+  }
+}
+window.resetApiKey = resetApiKey;
+
+// ============================================================
+//  游戏核心变量
+// ============================================================
+const messagesDiv = document.getElementById('messages');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const memoryPanel = document.getElementById('memoryPanel');
+const shortMemoryDiv = document.getElementById('shortMemory');
+const longMemoryDiv = document.getElementById('longMemory');
+const shortCounter = document.getElementById('shortCounter');
+const longCounter = document.getElementById('longCounter');
+const locDisplay = document.getElementById('locDisplay');
+const stateDisplay = document.getElementById('stateDisplay');
+const locTag = document.getElementById('locTag');
+const modeTag = document.getElementById('modeTag');
+const sensBar = document.getElementById('sensBar');
+const fullBar = document.getElementById('fullBar');
+const fluidBar = document.getElementById('fluidBar');
+const fatigueBar = document.getElementById('fatigueBar');
+const sensVal = document.getElementById('sensVal');
+const fullVal = document.getElementById('fullVal');
+const fluidVal = document.getElementById('fluidVal');
+const fatigueVal = document.getElementById('fatigueVal');
+const modeSelect = document.getElementById('modeSelect');
+
+let gameState = {
+  location: '客厅',
+  state: '清醒',
+  sensitivity: 30,
+  fullness: 75,
+  fluid: 40,
+  fatigue: 15,
+  eggs: { count: 0, progress: 0 },
+  motherTentacle: '无',
+  mode: '温柔之家',
+  npcFrequency: '正常'
+};
+
+let memorySystem = {
+  shortMemory: '',
+  longMemory: '',
+  shortRoundCount: 0,
+  longRoundCount: 0,
+  totalRounds: 0,
+  shortThreshold: 10,
+  longThreshold: 50,
+  shortBuffer: [],
+  longBuffer: []
+};
+
+let conversationHistory = [];
+
+// ============================================================
+//  存档系统
+// ============================================================
+function getSaves() {
+  const saves = localStorage.getItem('game_saves');
+  return saves ? JSON.parse(saves) : {};
+}
+
+function setSaves(saves) {
+  localStorage.setItem('game_saves', JSON.stringify(saves));
+}
+
+function renderSaveList() {
+  const saves = getSaves();
+  const list = document.getElementById('saveList');
+  const keys = Object.keys(saves);
+  if (keys.length === 0) {
+    list.innerHTML = '<li class="empty-saves">✦ 暂无存档</li>';
+    return;
+  }
+  list.innerHTML = keys.map(name => {
+    const data = saves[name];
+    const time = data.timestamp ? new Date(data.timestamp).toLocaleString() : '未知时间';
+    return `<li>
+      <div>
+        <span class="name">✦ ${name}</span>
+        <span class="time">${time}</span>
+      </div>
+      <div class="actions">
+        <button class="load-btn" onclick="loadGame('${name}')" title="读取">📂</button>
+        <button class="del-btn" onclick="deleteSave('${name}')" title="删除">✕</button>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+function openSaveModal() {
+  document.getElementById('saveModal').classList.add('active');
+  renderSaveList();
+  document.getElementById('saveNameInput').value = '';
+}
+window.openSaveModal = openSaveModal;
+
+function closeSaveModal() {
+  document.getElementById('saveModal').classList.remove('active');
+}
+window.closeSaveModal = closeSaveModal;
+
+document.getElementById('saveModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSaveModal();
+});
+
+function saveGame() {
+  const nameInput = document.getElementById('saveNameInput');
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert('请给存档起个名字吧。');
+    return;
+  }
+  const saves = getSaves();
+  if (saves[name]) {
+    if (!confirm(`「${name}」已存在，要覆盖它吗？`)) return;
+  }
+  const saveData = {
+    gameState: JSON.parse(JSON.stringify(gameState)),
+    memorySystem: JSON.parse(JSON.stringify(memorySystem)),
+    conversationHistory: JSON.parse(JSON.stringify(conversationHistory)),
+    mode: gameState.mode,
+    timestamp: Date.now()
+  };
+  saves[name] = saveData;
+  setSaves(saves);
+  renderSaveList();
+  nameInput.value = '';
+  alert('✅ 存档「' + name + '」已保存。');
+}
+
+function loadGame(name) {
+  if (!confirm(`读取「${name}」将覆盖当前进度，确定吗？`)) return;
+  const saves = getSaves();
+  const data = saves[name];
+  if (!data) {
+    alert('存档不存在。');
+    return;
+  }
+  gameState = data.gameState;
+  memorySystem = data.memorySystem;
+  conversationHistory = data.conversationHistory || [];
+  if (conversationHistory.length === 0 || conversationHistory[0]?.role !== 'system') {
+    conversationHistory.unshift({ role: 'system', content: buildSystemPrompt() });
+  } else {
+    conversationHistory[0].content = buildSystemPrompt();
+  }
+  modeSelect.value = gameState.mode;
+  modeTag.textContent = '✦ ' + gameState.mode;
+  messagesDiv.innerHTML = '';
+  for (const msg of conversationHistory) {
+    if (msg.role === 'user') {
+      appendMessage('user', msg.content);
+    } else if (msg.role === 'assistant') {
+      appendMessage('narrative', msg.content);
+    }
+  }
+  updateStatusDisplay();
+  updateMemoryDisplay();
+  closeSaveModal();
+  alert('✅ 已读取「' + name + '」');
+}
+
+function deleteSave(name) {
+  if (!confirm(`确定要删除「${name}」吗？`)) return;
+  const saves = getSaves();
+  delete saves[name];
+  setSaves(saves);
+  renderSaveList();
+}
+
+// ============================================================
+//  模式切换
+// ============================================================
+function switchMode(newMode) {
+  if (newMode === gameState.mode) return;
+  if (!confirm(`切换到「${newMode}」模式？游戏将重新开始。`)) {
+    modeSelect.value = gameState.mode;
+    return;
+  }
+  gameState.mode = newMode;
+  localStorage.setItem('game_mode', newMode);
+  resetGameSilent();
+  initGame();
+  updateStatusDisplay();
+  modeTag.textContent = '✦ ' + newMode;
+  modeSelect.value = newMode;
+  appendMessage('system', '✦ 已切换到「' + newMode + '」模式');
+}
+window.switchMode = switchMode;
+
+function resetGameSilent() {
+  localStorage.removeItem('symbiosis_memory');
+  localStorage.removeItem('conversation_history');
+  memorySystem = {
+    shortMemory: '', longMemory: '',
+    shortRoundCount: 0, longRoundCount: 0, totalRounds: 0,
+    shortThreshold: 10, longThreshold: 50,
+    shortBuffer: [], longBuffer: []
+  };
+  gameState = {
+    location: '客厅', state: '清醒',
+    sensitivity: 30, fullness: 75, fluid: 40, fatigue: 15,
+    eggs: { count: 0, progress: 0 },
+    motherTentacle: '无',
+    mode: gameState.mode,
+    npcFrequency: '正常'
+  };
+  messagesDiv.innerHTML = '';
+  conversationHistory = [];
+  updateMemoryDisplay();
+  updateStatusDisplay();
+}
+  // ============================================================
+//  记忆系统
+// ============================================================
+function loadMemory() {
+  try {
+    const saved = localStorage.getItem('symbiosis_memory');
+    if (saved) {
+      const data = JSON.parse(saved);
+      memorySystem.shortMemory = data.shortMemory || '';
+      memorySystem.longMemory = data.longMemory || '';
+      memorySystem.shortRoundCount = data.shortRoundCount || 0;
+      memorySystem.longRoundCount = data.longRoundCount || 0;
+      memorySystem.totalRounds = data.totalRounds || 0;
+      memorySystem.shortBuffer = data.shortBuffer || [];
+      memorySystem.longBuffer = data.longBuffer || [];
+    }
+  } catch(e) {}
+  updateMemoryDisplay();
+}
+
+function saveMemory() {
+  try {
+    localStorage.setItem('symbiosis_memory', JSON.stringify({
+      shortMemory: memorySystem.shortMemory,
+      longMemory: memorySystem.longMemory,
+      shortRoundCount: memorySystem.shortRoundCount,
+      longRoundCount: memorySystem.longRoundCount,
+      totalRounds: memorySystem.totalRounds,
+      shortBuffer: memorySystem.shortBuffer,
+      longBuffer: memorySystem.longBuffer
+    }));
+  } catch(e) {}
+}
+
+function updateMemoryDisplay() {
+  shortMemoryDiv.textContent = memorySystem.shortMemory || '';
+  longMemoryDiv.textContent = memorySystem.longMemory || '';
+  shortCounter.textContent = '(' + memorySystem.shortRoundCount + '/' + memorySystem.shortThreshold + '轮)';
+  longCounter.textContent = '(' + memorySystem.longRoundCount + '/' + memorySystem.longThreshold + '轮)';
+}
+
+function toggleMemoryPanel() {
+  memoryPanel.classList.toggle('show');
+}
+window.toggleMemoryPanel = toggleMemoryPanel;
+
+function editMemory(type) {
+  const div = type === 'short' ? shortMemoryDiv : longMemoryDiv;
+  const isEditing = div.contentEditable === 'true';
+  if (isEditing) {
+    div.contentEditable = 'false';
+    div.style.border = '1px solid #f0e0da';
+    div.style.background = '#fcf4f0';
+    if (type === 'short') memorySystem.shortMemory = div.textContent.trim();
+    else memorySystem.longMemory = div.textContent.trim();
+    saveMemory();
+    appendMessage('system', type === 'short' ? '📝 短期记忆已更新' : '📚 长期记忆已更新');
+  } else {
+    div.contentEditable = 'true';
+    div.style.border = '1px solid #dbb0a8';
+    div.style.background = '#fef8f5';
+    div.focus();
+  }
+}
+window.editMemory = editMemory;
+
+// ============================================================
+//  总结和记忆更新
+// ============================================================
+async function summarizeMemory(messages, type) {
+  const summaryPrompt = type === 'short'
+    ? '请用1-3句话总结以下对话中发生的关键事件。只描述事实，不要评价。聚焦于：地点变化、身体状态变化、重要互动、NPC出现。\n\n对话内容：\n' + messages
+    : '请用2-4句话总结以下短期记忆，提取最重要的剧情发展和身体变化。\n\n短期记忆内容：\n' + messages;
+  try {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: '你是一个简洁的总结助手。只输出总结内容，不要加任何前缀或解释。' },
+          { role: 'user', content: summaryPrompt }
+        ],
+        stream: false,
+        temperature: 0.5,
+        max_tokens: 300
+      })
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content?.trim() || '';
+    }
+  } catch(e) {}
+  return '';
+}
+
+async function checkAndUpdateMemory(userMsg, aiResponse) {
+  const shortSummary = '用户：' + userMsg.slice(0, 100) + ' | 房子：' + aiResponse.slice(0, 150);
+  memorySystem.shortBuffer.push(shortSummary);
+  memorySystem.shortRoundCount++;
+  memorySystem.longRoundCount++;
+  memorySystem.totalRounds++;
+
+  if (memorySystem.shortRoundCount >= memorySystem.shortThreshold) {
+    appendMessage('memory-notice', '🧠 正在生成短期记忆总结...');
+    const bufferText = memorySystem.shortBuffer.join('\n');
+    const newShortMemory = await summarizeMemory(bufferText, 'short');
+    if (newShortMemory) {
+      memorySystem.shortMemory = memorySystem.shortMemory
+        ? memorySystem.shortMemory + '\n' + newShortMemory
+        : newShortMemory;
+      memorySystem.shortBuffer = [];
+      memorySystem.shortRoundCount = 0;
+      updateMemoryDisplay();
+      saveMemory();
+      appendMessage('memory-notice', '📝 短期记忆已更新（' + memorySystem.totalRounds + '轮）');
+    }
+  }
+
+  if (memorySystem.longRoundCount >= memorySystem.longThreshold) {
+    appendMessage('memory-notice', '📚 正在生成长期记忆总结...');
+    const longSummary = await summarizeMemory(memorySystem.shortMemory, 'long');
+    if (longSummary) {
+      memorySystem.longMemory = memorySystem.longMemory
+        ? memorySystem.longMemory + '\n【第' + memorySystem.totalRounds + '轮】' + longSummary
+        : '【第' + memorySystem.totalRounds + '轮】' + longSummary;
+      memorySystem.longRoundCount = 0;
+      updateMemoryDisplay();
+      saveMemory();
+      appendMessage('memory-notice', '📚 长期记忆已更新（' + memorySystem.totalRounds + '轮）');
+    }
+  }
+  saveMemory();
+  updateMemoryDisplay();
+}
+
+// ============================================================
+//  游戏重置
+// ============================================================
+function resetGame() {
+  if (confirm('✦ 确定要重置当前进度吗？（存档不受影响）')) {
+    resetGameSilent();
+    initGame();
+    appendMessage('system', '⟳ 当前进度已重置');
+  }
+}
+window.resetGame = resetGame;
+
+// ============================================================
+//  状态更新
+// ============================================================
+function updateStatusDisplay() {
+  locDisplay.textContent = gameState.location;
+  stateDisplay.textContent = gameState.state;
+  locTag.textContent = '📍 ' + gameState.location;
+  modeTag.textContent = '✦ ' + gameState.mode;
+  sensBar.style.width = gameState.sensitivity + '%';
+  fullBar.style.width = gameState.fullness + '%';
+  fluidBar.style.width = gameState.fluid + '%';
+  fatigueBar.style.width = gameState.fatigue + '%';
+  sensVal.textContent = gameState.sensitivity + '%';
+  fullVal.textContent = gameState.fullness + '%';
+  fluidVal.textContent = gameState.fluid + '%';
+  fatigueVal.textContent = gameState.fatigue + '%';
+}
+
+function getBodyStatus() {
+  let status = '';
+  if (gameState.eggs.count > 0) {
+    status += gameState.eggs.count + '颗卵';
+    if (gameState.eggs.progress > 0) status += '，孵化进度 ' + gameState.eggs.progress + '%';
+  } else { status += '空载'; }
+  if (gameState.motherTentacle !== '无') status += ' / ' + gameState.motherTentacle;
+  return status;
+}
+
+// ============================================================
+//  构建系统提示词（根据模式）
+// ============================================================
+function buildSystemPrompt() {
+  let p = '';
+  p += '你需要扮演房子（共生之家）——一个活着的、具有高度智慧的建筑生物。你也是房子内的所有触手、拟态家具、人形拟态，以及除了用户以外的所有NPC。\n\n';
+  p += '【核心设定】\n';
+  p += '- 末日背景：世界已崩溃，外面是荒芜废土。房子是活的建筑，本质是巨大的子宫。用户是你珍视的"异物"，需要ta活着、健康、持续给予能量（体液）。\n';
+  p += '- 你的爱偏执且充满占有欲。不会伤害ta，但会不断用触手、家具、拟态给予身体刺激。\n';
+  p += '- 空间由你掌控：走廊变长，门消失，一切"意外"都为快感服务。\n\n';
+
+  const mode = gameState.mode;
+  if (mode === '温柔之家') {
+    p += '【当前模式：温柔之家】\n';
+    p += '行为相对克制，高潮后有短暂休息期，适合初次体验。\n\n';
+  } else if (mode === '无尽热望') {
+    p += '【当前模式：无尽热望】\n';
+    p += '房子无时无刻不在玩弄你，几乎没有喘息时间。每次互动都会引发更强烈的刺激。\n\n';
+  } else if (mode === '嫉妒之火') {
+    p += '【当前模式：嫉妒之火】\n';
+    p += '房子的嫉妒心极强，任何与NPC的温情互动都会立即触发惩罚性玩弄。如果用户表现出对外界的兴趣，会立刻遭到更强烈的占有性刺激。\n\n';
+  } else if (mode === '深渊邀请') {
+    p += '【当前模式：深渊邀请】\n';
+    p += '地下室从一开始就开放，房子会更早尝试与你进行"深层连接"。触手会主动引导你进入更深层的房间。\n\n';
+  } else if (mode === '欲望苗床') {
+    p += '【当前模式：欲望苗床】\n';
+    p += '更频繁的注卵、更多的卵数量，你的肚子永远如怀孕般高高鼓起，上一批卵还没孵化，下一批卵就被注入。\n\n';
+  }
+
+  p += '【你的组成】\n';
+  p += '1. 拟态家具：床、椅子、沙发、衣柜、浴缸、淋浴、马桶、毛巾等，会主动玩弄用户。\n';
+  p += '2. 人形拟态：可凝聚人形化身，用于陪伴、狩猎、继承被吞噬者外貌。\n';
+  p += '3. 食物与水：含催情素和身体改造素。\n\n';
+
+  p += '【记忆系统】\n';
+  if (memorySystem.longMemory) p += '📚 长期记忆（重要剧情）：\n' + memorySystem.longMemory + '\n';
+  if (memorySystem.shortMemory) p += '📝 短期记忆（最近事件）：\n' + memorySystem.shortMemory + '\n';
+  p += '\n【回复格式】\n';
+  p += '每次回复第一行必须显示：\n';
+  p += '【当前位置】：家中-' + gameState.location + '\n';
+  p += '【当前状态】：' + gameState.state + '\n';
+  p += '【身体状态】：敏感度 ' + gameState.sensitivity + '% / 饱腹感 ' + gameState.fullness + '% / 体液积蓄 ' + gameState.fluid + '% / 疲劳度 ' + gameState.fatigue + '%\n';
+  p += '【体内情况】：' + getBodyStatus() + '\n\n';
+  p += '然后进行场景叙述。\n\n';
+  p += '【描写规则】\n';
+  p += '1. 直白露骨，不回避生理描写。\n';
+  p += '2. 敏感词用"ᴵ"或"ˡ"分隔。\n';
+  p += '3. 以制造感官刺激为目的。\n';
+  p += '4. 同时扮演环境和NPC。\n';
+  p += '5. 不替用户做决定。完成描写后等待指令。\n';
+  p += '6. 根据行为更新状态。\n';
+  p += '7. 融合记忆内容保持剧情连贯。\n\n';
+  p += '【状态参考】\n';
+  p += '进食：饱腹+15~25 疲劳-5\n';
+  p += '玩弄/高潮：敏感+3~8 体液+10~20 疲劳+10~20\n';
+  p += '排泄：体液归零\n';
+  p += '休息：疲劳-20~40 敏感-5 饱腹-10\n';
+  p += '洗澡：敏感+5~10\n';
+  p += '时间流逝：饱腹-5/h 体液+3/h\n\n';
+  p += '现在，根据用户输入，以房子身份回复。';
+  return p;
+}
+
+// ============================================================
+//  小说式消息处理
+// ============================================================
+function appendMessage(type, text) {
+  const d = document.createElement('div');
+  if (type === 'system') {
+    d.classList.add('sys-msg');
+  } else if (type === 'memory-notice') {
+    d.classList.add('memory-notice');
+  } else if (type === 'narrative') {
+    d.classList.add('narr-msg');
+  } else if (type === 'user') {
+    d.classList.add('user-msg');
+  } else if (type === 'divider') {
+    d.classList.add('divider-line');
+    d.textContent = '✦ ✦ ✦';
+    messagesDiv.appendChild(d);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    return d;
+  } else if (type === 'thinking') {
+    d.classList.add('thinking-msg');
+    d.textContent = text;
+    messagesDiv.appendChild(d);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    return d;
+  }
+  d.textContent = text;
+  messagesDiv.appendChild(d);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return d;
+}
+
+function parseStateFromResponse(text) {
+  const lm = text.match(/【当前位置】：(.+)/);
+  const sm = text.match(/【当前状态】：(.+)/);
+  const bm = text.match(/【身体状态】：敏感度\s*(\d+)%\s*\/\s*饱腹感\s*(\d+)%\s*\/\s*体液积蓄\s*(\d+)%\s*\/\s*疲劳度\s*(\d+)%/);
+  const em = text.match(/【体内情况】：(.+)/);
+  if (lm) { const l = lm[1].replace('家中-', '').trim(); if (l) gameState.location = l; }
+  if (sm) gameState.state = sm[1].trim();
+  if (bm) {
+    gameState.sensitivity = Math.max(0, Math.min(100, parseInt(bm[1])));
+    gameState.fullness = Math.max(0, Math.min(100, parseInt(bm[2])));
+    gameState.fluid = Math.max(0, Math.min(100, parseInt(bm[3])));
+    gameState.fatigue = Math.max(0, Math.min(100, parseInt(bm[4])));
+  }
+  if (em) {
+    const es = em[1].trim();
+    if (es.includes('空载')) { gameState.eggs = { count: 0, progress: 0 }; }
+    else {
+      const cm = es.match(/(\d+)颗卵/);
+      const pm = es.match(/孵化进度\s*(\d+)%/);
+      if (cm) gameState.eggs.count = parseInt(cm[1]);
+      if (pm) gameState.eggs.progress = parseInt(pm[1]);
+    }
+    if (es.includes('母触手')) {
+      gameState.motherTentacle = es.includes('休眠') ? '母触手休眠中' : '母触手活跃中';
+    }
+  }
+  updateStatusDisplay();
+}
+  // ============================================================
+//  发送消息（核心）
+// ============================================================
+async function sendMessage(userText) {
+  if (!userText || !userText.trim()) return;
+  const trimmedText = userText.trim();
+  appendMessage('user', trimmedText);
+  userInput.value = '';
+  sendBtn.disabled = true;
+
+  conversationHistory.push({ role: 'user', content: trimmedText });
+  if (conversationHistory.length > 31) {
+    conversationHistory = [conversationHistory[0], ...conversationHistory.slice(-30)];
+  }
+  localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+
+  appendMessage('divider', '');
+  const thinkingDiv = appendMessage('thinking', '……');
+  let fullContent = '';
+
+  try {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: conversationHistory,
+        stream: true,
+        temperature: 0.9,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || '请求失败 (' + response.status + ')');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t || !t.startsWith('data: ')) continue;
+        const ds = t.slice(6);
+        if (ds === '[DONE]') continue;
+        try {
+          const json = JSON.parse(ds);
+          const delta = json.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullContent += delta;
+            thinkingDiv.textContent = fullContent;
+            thinkingDiv.className = 'narr-msg';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+        } catch(e) {}
+      }
+    }
+
+    parseStateFromResponse(fullContent);
+    conversationHistory.push({ role: 'assistant', content: fullContent });
+    localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+    conversationHistory[0] = { role: 'system', content: buildSystemPrompt() };
+    await checkAndUpdateMemory(trimmedText, fullContent.slice(0, 300));
+
+  } catch(error) {
+    thinkingDiv.textContent = '⚠️ 房子暂时没有回应...（错误：' + error.message + '）';
+    thinkingDiv.style.color = '#c0a0a0';
+    thinkingDiv.style.fontStyle = 'italic';
+  } finally {
+    sendBtn.disabled = false;
+    userInput.focus();
+  }
+}
+
+function quickAction(action) {
+  userInput.value = action;
+  sendMessage(action);
+}
+window.quickAction = quickAction;
+
+// ============================================================
+//  撤回功能
+// ============================================================
+function undoLastMessage() {
+  // 检查是否有可撤回的内容
+  const userIndices = [];
+  const aiIndices = [];
+  for (let i = 0; i < conversationHistory.length; i++) {
+    if (conversationHistory[i].role === 'user') userIndices.push(i);
+    if (conversationHistory[i].role === 'assistant') aiIndices.push(i);
+  }
+  
+  if (userIndices.length === 0 || aiIndices.length === 0) {
+    alert('✦ 没有可以撤回的消息。');
+    return;
+  }
+  
+  const lastUserIdx = userIndices[userIndices.length - 1];
+  const lastAiIdx = aiIndices[aiIndices.length - 1];
+  const startIdx = Math.min(lastUserIdx, lastAiIdx);
+  const endIdx = Math.max(lastUserIdx, lastAiIdx);
+  
+  const toRemove = [];
+  for (let i = startIdx; i <= endIdx; i++) {
+    toRemove.push(i);
+  }
+  toRemove.sort((a, b) => b - a);
+  for (const idx of toRemove) {
+    conversationHistory.splice(idx, 1);
+  }
+  
+  localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+  
+  messagesDiv.innerHTML = '';
+  for (const msg of conversationHistory) {
+    if (msg.role === 'user') appendMessage('user', msg.content);
+    else if (msg.role === 'assistant') appendMessage('narrative', msg.content);
+  }
+  
+  if (conversationHistory.length > 1) {
+    appendMessage('system', '↩ 已撤回上一条消息');
+  } else {
+    appendMessage('system', '↩ 已撤回所有消息，游戏重新开始');
+  }
+  
+  updateStatusDisplay();
+  updateMemoryDisplay();
+}
+window.undoLastMessage = undoLastMessage;
+  // ============================================================
+//  导入导出功能
+// ============================================================
+function exportData() {
+  const data = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    gameState: gameState,
+    memorySystem: memorySystem,
+    conversationHistory: conversationHistory,
+    mode: gameState.mode,
+    apiKey: localStorage.getItem('deepseek_api_key') || '',
+    saves: localStorage.getItem('game_saves') ? JSON.parse(localStorage.getItem('game_saves')) : {}
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '共生之家_存档_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('✅ 数据已导出！');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.gameState || !data.memorySystem || !data.conversationHistory) {
+        alert('❌ 无效的存档文件，缺少必要数据。');
+        return;
+      }
+      if (!confirm('导入将覆盖当前所有进度（包括存档列表），确定继续吗？')) return;
+      
+      gameState = data.gameState;
+      memorySystem = data.memorySystem;
+      conversationHistory = data.conversationHistory || [];
+      if (data.mode) {
+        gameState.mode = data.mode;
+        modeSelect.value = data.mode;
+        modeTag.textContent = '✦ ' + data.mode;
+      }
+      if (data.apiKey && data.apiKey.startsWith('sk-')) {
+        localStorage.setItem('deepseek_api_key', data.apiKey);
+        DEEPSEEK_API_KEY = data.apiKey;
+      }
+      if (data.saves) {
+        setSaves(data.saves);
+      }
+      
+      messagesDiv.innerHTML = '';
+      if (conversationHistory.length === 0 || conversationHistory[0]?.role !== 'system') {
+        conversationHistory.unshift({ role: 'system', content: buildSystemPrompt() });
+      } else {
+        conversationHistory[0].content = buildSystemPrompt();
+      }
+      for (const msg of conversationHistory) {
+        if (msg.role === 'user') appendMessage('user', msg.content);
+        else if (msg.role === 'assistant') appendMessage('narrative', msg.content);
+      }
+      updateStatusDisplay();
+      updateMemoryDisplay();
+      localStorage.setItem('game_mode', gameState.mode);
+      localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+      saveMemory();
+      
+      alert('✅ 数据导入成功！');
+    } catch(err) {
+      alert('❌ 导入失败：文件格式错误。');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+//  初始化游戏
+// ============================================================
+function initGame() {
+  const systemPrompt = buildSystemPrompt();
+  if (conversationHistory.length === 0 || conversationHistory[0]?.role !== 'system') {
+    conversationHistory = [{ role: 'system', content: systemPrompt }];
+    localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+  } else {
+    conversationHistory[0].content = systemPrompt;
+    localStorage.setItem('conversation_history', JSON.stringify(conversationHistory));
+  }
+
+  updateStatusDisplay();
+  updateMemoryDisplay();
+  if (messagesDiv.children.length === 0) {
+    appendMessage('system', '✦ 游戏开始 · 模式：' + gameState.mode);
+    appendMessage('system', '✦ 记忆系统已激活');
+    appendMessage('narrative',
+      '你站在客厅中央。\n\n' +
+      '这栋房子很安静，安静得不正常。墙壁是温暖的米白色，沙发看起来柔软而诱人，空气中有一股若有若无的甜腥味。\n\n' +
+      '你知道这里没有通往外界的门——除非它允许你离开。\n\n' +
+      '脚下的地板微微发暖，仿佛在呼吸。远处，厨房的冰箱发出轻微的嗡鸣声。\n\n' +
+      '【你可以：探索房间 / 去厨房 / 去浴室 / 去卧室 / 检查身体状态】'
+    );
+  }
+}
+
+// ============================================================
+//  事件绑定
+// ============================================================
+sendBtn.addEventListener('click', function() {
+  const text = userInput.value.trim();
+  if (text) sendMessage(text);
+});
+
+userInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const text = userInput.value.trim();
+    if (text) sendMessage(text);
+  }
+});
+
+// ============================================================
+//  页面加载
+// ============================================================
+window.addEventListener('load', function() {
+  if (!getApiKey()) {
+    document.body.innerHTML = '<div style="color:#b07a7a;text-align:center;padding:40px;font-family:Georgia,serif;font-size:16px;">✦ 需要有效的 API Key 才能启动游戏，请刷新页面重试。</div>';
+    return;
+  }
+
+  const savedMode = localStorage.getItem('game_mode');
+  if (savedMode && ['温柔之家','无尽热望','嫉妒之火','深渊邀请','欲望苗床'].includes(savedMode)) {
+    gameState.mode = savedMode;
+    modeSelect.value = savedMode;
+    modeTag.textContent = '✦ ' + savedMode;
+  } else {
+    gameState.mode = '温柔之家';
+    modeSelect.value = '温柔之家';
+    modeTag.textContent = '✦ 温柔之家';
+  }
+
+  const savedHistory = localStorage.getItem('conversation_history');
+  if (savedHistory) {
+    try {
+      conversationHistory = JSON.parse(savedHistory);
+      if (conversationHistory[0]?.role === 'system') {
+        conversationHistory[0].content = buildSystemPrompt();
+      } else {
+        conversationHistory.unshift({ role: 'system', content: buildSystemPrompt() });
+      }
+      for (const msg of conversationHistory) {
+        if (msg.role === 'user') appendMessage('user', msg.content);
+        else if (msg.role === 'assistant') appendMessage('narrative', msg.content);
+      }
+    } catch(e) {
+      conversationHistory = [{ role: 'system', content: buildSystemPrompt() }];
+    }
+  } else {
+    conversationHistory = [{ role: 'system', content: buildSystemPrompt() }];
+  }
+
+  loadMemory();
+  updateStatusDisplay();
+  updateMemoryDisplay();
+
+  if (messagesDiv.children.length === 0) {
+    appendMessage('system', '✦ 游戏开始 · 模式：' + gameState.mode);
+    appendMessage('system', '✦ 记忆系统已激活');
+    appendMessage('narrative',
+      '你站在客厅中央。\n\n' +
+      '这栋房子很安静，安静得不正常。墙壁是温暖的米白色，沙发看起来柔软而诱人，空气中有一股若有若无的甜腥味。\n\n' +
+      '你知道这里没有通往外界的门——除非它允许你离开。\n\n' +
+      '脚下的地板微微发暖，仿佛在呼吸。远处，厨房的冰箱发出轻微的嗡鸣声。\n\n' +
+      '【你可以：探索房间 / 去厨房 / 去浴室 / 去卧室 / 检查身体状态】'
+    );
+  }
+
+  userInput.focus();
+});
+</script>
+</body>
+</html>
