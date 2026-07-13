@@ -1324,16 +1324,25 @@ async function summarizeMemory(messages, type) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_API_KEY}` },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-v4-flash',    // ← 改了（用flash即可，省钱）
         messages: [
           { role: 'system', content: '你是一个简洁的总结助手。只输出总结内容，不要加任何前缀或解释。' },
           { role: 'user', content: summaryPrompt }
         ],
         stream: false,
         temperature: 0.5,
-        max_tokens: 300
+        max_tokens: 300,
+        thinking: { type: "enabled" }, // ← 新增
+        reasoning_effort: "high"       // ← 新增
       })
     });
+    if (response.ok) {
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content?.trim() || '';
+    }
+  } catch(e) {}
+  return '';
+}
     if (response.ok) {
       const data = await response.json();
       return data.choices?.[0]?.message?.content?.trim() || '';
@@ -1536,13 +1545,15 @@ async function sendMessage(userText) {
         'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-chat',   // ← 这里是关键
         messages: conversationHistory,
         stream: true,
         temperature: 0.85,
         max_tokens: 2500
       })
     });
+
+    // ... 后续代码
 
     if (!response.ok) {
       const error = await response.json();
